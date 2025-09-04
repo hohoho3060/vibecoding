@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vibe Coding – Pixel Start (Integrated · Java)</title>
+    <meta name="description" content="레트로 픽셀 데스크탑 → VS Code 스타일 IDE 전환. Java 코드가 한 글자씩 타이핑되며 줄번호 동기화. HTML 보간 오류 없음." />
+    <style>
+        :root {
+            --bg1: #0b1020;
+            --bg2: #070a12;
+            --text: #eaf0ff;
+            --muted: #9fb0d6;
+            --primary: #7c8cff;
+            --accent: #6ae3ff;
+            --hot: #ff6ad5;
+            --crt: #0a0e17;
+            --crt2: #0b0f19;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%
+        }
+
+        body {
+            margin: 0;
+            font-family: ui-sans-serif, -apple-system, Segoe UI, Roboto, Helvetica, "Apple SD Gothic Neo", "Noto Sans KR", Arial;
+            color: var(--text);
+            background: radial-gradient(900px 600px at 80% -10%, #26307433, transparent), radial-gradient(1000px 700px at 0% 100%, #0c2e4a33, transparent), linear-gradient(180deg, var(--bg1), var(--bg2));
+            overflow-x: hidden
+        }
+
+        .wrap {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 0 20px
+        }
+
+        header {
+            padding: 24px 0
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            letter-spacing: .3px
+        }
+
+        main {
+            min-height: calc(100vh - 200px)
+        }
+
+        /* HERO */
+        .hero {
+            padding: 56px 0 26px
+        }
+
+        .headline {
+            text-align: center;
+            max-width: 960px;
+            margin: 0 auto 28px
+        }
+
+        .badge {
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #1a1f35, #121628);
+            color: #cbd5ff;
+            border: 1px solid #34406a
+        }
+
+        h1 {
+            font-size: clamp(36px, 6vw, 72px);
+            letter-spacing: -.02em;
+            margin: 16px 0 10px
+        }
+
+        .gradient {
+            background: linear-gradient(90deg, var(--accent), var(--primary), var(--hot));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent
+        }
+
+        .lead {
+            color: var(--muted);
+            font-size: 18px;
+            margin: 6px 0 20px
+        }
+
+        /* MONITOR */
+        .monitor-wrap {
+            margin: 26px auto 0;
+            width: min(980px, 92vw);
+        }
+
+        .monitor {
+            position: relative;
+            aspect-ratio: 16/9;
+            border-radius: 18px;
+            overflow: hidden;
+            background: linear-gradient(180deg, var(--crt2), var(--crt));
+            box-shadow: inset 0 0 0 1px #223, 0 40px 120px rgba(0, 0, 0, .45);
+            transform-origin: center center
+        }
+
+        .bezel {
+            position: absolute;
+            inset: -2px;
+            border-radius: 22px;
+            padding: 2px;
+            background: linear-gradient(135deg, rgba(108, 131, 255, .45), rgba(106, 227, 255, .3), rgba(255, 106, 213, .3));
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude
+        }
+
+        .viewport {
+            position: absolute;
+            inset: 16px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #02040b
+        }
+
+        .scan {
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, .04) 0px, rgba(255, 255, 255, .04) 1px, transparent 2px, transparent 4px);
+            mix-blend-mode: overlay;
+            pointer-events: none
+        }
+
+        .glow {
+            position: absolute;
+            inset: 0;
+            box-shadow: inset 0 0 60px rgba(124, 140, 255, .15), inset 0 0 120px rgba(106, 227, 255, .1);
+            pointer-events: none
+        }
+
+        /* PIXEL DESKTOP (HOME) */
+        .pixel-home {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(800px 400px at 50% 10%, #27487722, transparent 60%),
+                linear-gradient(180deg, #0b1430 0%, #0a0f1c 100%);
+            image-rendering: pixelated;
+            font-family: "Courier New", ui-monospace, Menlo, Consolas, monospace;
+            color: #d3e0ff
+        }
+
+        .pixel-grid {
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(transparent 98%, rgba(255, 255, 255, .06) 100%),
+                linear-gradient(90deg, transparent 98%, rgba(255, 255, 255, .06) 100%);
+            background-size: 10px 10px;
+            opacity: .18
+        }
+
+        .pixel-window {
+            position: absolute;
+            left: 8%;
+            top: 12%;
+            width: 84%;
+            height: 72%;
+            border: 2px solid #4a5fb3;
+            background: #0a1030;
+            box-shadow: 0 0 0 4px #0b123a inset
+        }
+
+        .pixel-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            background: #0d1648;
+            border-bottom: 2px solid #3a4a9a;
+            font-weight: 700;
+            letter-spacing: .3px
+        }
+
+        .pixel-title .dot {
+            width: 10px;
+            height: 10px;
+            background: #ff6b6b;
+            box-shadow: 12px 0 0 #ffd166, 24px 0 0 #06d6a0
+        }
+
+        .pixel-body {
+            position: absolute;
+            inset: 44px 10px 10px 10px;
+            border: 2px solid #2a3685;
+            background: #0a123d;
+            display: grid;
+            place-items: center
+        }
+
+        .start-btn {
+            display: inline-block;
+            padding: 14px 22px;
+            background: #1b2dff;
+            color: #fff;
+            border: 4px solid #0a0f3a;
+            box-shadow: inset -4px -4px 0 #0a0f3a, inset 4px 4px 0 #3d54ff;
+            text-transform: uppercase;
+            font-weight: 900;
+            letter-spacing: 1px;
+            cursor: pointer
+        }
+
+        .start-btn:hover {
+            filter: brightness(1.1)
+        }
+
+        .hint {
+            position: absolute;
+            right: 14px;
+            bottom: 10px;
+            color: #9fb0d6;
+            font-size: 12px;
+            opacity: .9
+        }
+
+        /* IDE SCREEN (VS Code 스타일) */
+        .ide {
+            position: absolute;
+            inset: 0;
+            display: none;
+            background: linear-gradient(180deg, #0b0f19, #0a0e17)
+        }
+
+        .ide.show {
+            display: block
+        }
+
+        .bar-top {
+            height: 36px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 12px;
+            background: #0e1224;
+            border-bottom: 1px solid #1a2240;
+            color: #c7d2ff;
+            font-size: 14px
+        }
+
+        .bar-top .tab {
+            padding: 6px 10px;
+            border-radius: 6px;
+            background: #141a35;
+            border: 1px solid #232b47
+        }
+
+        .pane {
+            position: absolute;
+            top: 36px;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: grid;
+            grid-template-columns: 240px 1fr
+        }
+
+        .sidebar {
+            border-right: 1px solid #1a2240;
+            background: #0d1226
+        }
+
+        .sidebar h4 {
+            margin: 10px 12px;
+            font-size: 12px;
+            color: #8aa0e0;
+            text-transform: uppercase;
+            letter-spacing: .8px
+        }
+
+        .file {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            color: #c7d2ff;
+            font-size: 14px
+        }
+
+        .file::before {
+            content: "📄"
+        }
+
+        .editor {
+            position: relative;
+            background: #0b1022
+        }
+
+        .gutter {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 48px;
+            background: #0b0f1f;
+            color: #6e7fb6;
+            text-align: right;
+            padding: 10px 8px;
+            font: 13px/1.8 Menlo, monospace;
+            user-select: none;
+            white-space: pre
+        }
+
+        .code {
+            position: absolute;
+            left: 48px;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            padding: 10px 14px;
+            color: #d7e0ff;
+            font: 13px/1.8 Menlo, Consolas, monospace;
+            white-space: pre;
+            overflow: auto
+        }
+
+        .caret {
+            display: inline-block;
+            width: 8px;
+            animation: blink 1s steps(1, end) infinite
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0
+            }
+        }
+
+        /* CONTACT */
+        .contact{max-width:900px;margin:32px auto 96px;padding:0 20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",Helvetica,Arial,sans-serif}
+        .contact-card{position:relative;border-radius:18px;background:linear-gradient(180deg,#0e1320,#0a0e17);border:1px solid #232b47;box-shadow:0 16px 48px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.05);padding:22px}
+        .contact-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+        .contact-title{margin:0;font-size:28px;letter-spacing:-.01em}
+        .contact-desc{margin:6px 0 0;color:var(--muted)}
+        .btn-group{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px}
+        .btn{--bd:#2b3350;display:inline-flex;align-items:center;gap:8px;padding:12px 16px;border-radius:14px;background:linear-gradient(180deg,#151a27,#0f1420);border:1px solid var(--bd);color:#eaf0ff;text-decoration:none;font-weight:800;letter-spacing:.2px;transition:transform .12s ease, box-shadow .2s ease, border-color .2s ease}
+        .btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(0,0,0,.35),0 0 28px rgba(122,142,255,.2)}
+        .btn:active{transform:translateY(0)}
+        .btn .ico{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:10px;background:#0e1322;border:1px solid var(--bd)}
+        .btn.email{--bd:#2f8aa7}
+        .btn.github{--bd:#3a4cff}
+        .btn.cv{--bd:#b33a86}
+    </style>
+</head>
+
+<body>
+    <header class="wrap">
+        <div class="brand">Vibe Coding</div>
+    </header>
+
+    <main>
+        <section class="hero wrap">
+            <div class="headline">
+                <span class="badge">✨Vibe Coding✨</span>
+                <h1><span class="gradient">우리 함께 Vibe Coding 으로<br> 원하는 것을 만들어요!</span></h1>
+
+            </div>
+
+            <!-- 대형 모니터 -->
+            <div class="monitor-wrap">
+                <div class="monitor" id="monitorBox">
+                    <span class="bezel"></span>
+                    <div class="viewport" id="viewport">
+
+                        <!-- PIXEL HOME -->
+                        <div class="pixel-home" id="home">
+                            <div class="pixel-grid"></div>
+                            <div class="pixel-window">
+                                <div class="pixel-title"><span class="dot"></span> Vibe OS</div>
+                                <div class="pixel-body">
+                                    <button class="start-btn" id="startBtn" type="button">시작하기</button>
+                                    <div class="hint">ENTER 키로도 시작할 수 있어요</div>
+                                </div>
+                            </div>
+                            <div class="scanlines"></div>
+                        </div>
+
+                        <!-- IDE SCREEN -->
+                        <div class="ide" id="ide">
+                            <div class="bar-top">
+                                <div class="tab">Main.java</div>
+                                <div class="tab">Utils.java</div>
+                            </div>
+                            <div class="pane">
+                                <aside class="sidebar">
+                                    <h4>EXPLORER</h4>
+                                    <div class="file">Main.java</div>
+                                    <div class="file">Utils.java</div>
+                                </aside>
+                                <section class="editor">
+                                    <div class="gutter" id="gutter"></div>
+                                    <pre class="code" id="code"></pre>
+                                    <div class="scanlines"></div>
+                                    <div class="crt-glow"></div>
+                                </section>
+                            </div>
+                            <div class="glow"></div>
+                        </div>
+
+                    </div>
+                    <span class="scan"></span>
+                </div>
+                <div class="stand"></div>
+            </div>
+        </section>
+
+        <!-- CONTACT -->
+        <section class="contact" id="contact">
+            <div class="contact-card">
+                <div class="contact-head">
+                    <h2 class="contact-title">Contact</h2>
+                    <p class="contact-desc">프로젝트 협업, 강의 의뢰, 연구 제안 모두 환영합니다.</p>
+                </div>
+                <div class="btn-group">
+                    <a class="btn email" href="mailto:your@email.com">
+                        <span class="ico">📧</span> 이메일
+                    </a>
+                    <a class="btn github" href="https://github.com/your-id" target="_blank" rel="noreferrer">
+                        <span class="ico">🌐</span> GitHub
+                    </a>
+                    <a class="btn cv" href="#" target="_blank" rel="noreferrer">
+                        <span class="ico">📄</span> 이력서
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="wrap">© <span id="year"></span> Vibe Coding • HTML/CSS/JS</div>
+    </footer>
+
+    <script>
+        // 연도 출력
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // ===== Java 예제 라인 (안전한 일반 문자열) =====
+        const javaLines = [
+            'public class Main {',
+            '    public static void main(String[] args) {',
+            '        greet("Vibe");',
+            '        int[] numbers = {1,2,3,4,5};',
+            '        for (int n : numbers) {',
+            '            System.out.println("Number: " + n);',
+            '        }',
+            '    }',
+            '',
+            '    static void greet(String name) {',
+            '        System.out.println("Hello, " + name + " Coding!");',
+            '    }',
+            '}'
+        ];
+
+        // 요소 참조
+        const startBtn = document.getElementById('startBtn');
+        const home = document.getElementById('home');
+        const ide = document.getElementById('ide');
+        const codeEl = document.getElementById('code');
+        const gutterEl = document.getElementById('gutter');
+
+        // 타이핑 상태
+        let li = 0; // 현재 줄 인덱스
+        let ci = 0; // 현재 줄에서 입력할 다음 문자 위치
+        let buffer = ''; // 출력된 전체 코드 버퍼
+        const SPEED = 20; // ms/문자 (필요시 조절)
+
+        function resetTyping() { li = 0; ci = 0; buffer = ''; codeEl.textContent = ''; gutterEl.textContent = ''; }
+
+        function updateGutter(totalLines) {
+            let s = '';
+            for (let i = 1; i <= totalLines; i++) { s += i + (i === totalLines ? '' : '\n'); }
+            gutterEl.textContent = s;
+        }
+
+        function typeStep() {
+            if (li >= javaLines.length) {
+                // 끝: 캐럿만 깜빡이게
+                codeEl.innerHTML = escapeHtml(buffer) + '<span class="caret">▌</span>';
+                return;
+            }
+            const line = javaLines[li];
+            if (ci < line.length) {
+                buffer += line.charAt(ci);
+                ci++;
+            } else {
+                buffer += '\n';
+                li++; ci = 0;
+            }
+            codeEl.innerHTML = escapeHtml(buffer) + '<span class="caret">▌</span>';
+            updateGutter(buffer.split('\n').length);
+            setTimeout(typeStep, SPEED);
+        }
+
+        function showIDE() {
+            home.style.display = 'none';
+            ide.classList.add('show');
+            resetTyping();
+            typeStep();
+        }
+
+        if (startBtn) {
+            startBtn.addEventListener('click', showIDE);
+            startBtn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showIDE(); } });
+            startBtn.setAttribute('aria-label', '시작하기');
+        }
+        document.addEventListener('keydown', (e) => {
+            if ((e.key === 'Enter' || e.key === ' ') && home && home.style.display !== 'none') {
+                e.preventDefault();
+                showIDE();
+            }
+        });
+
+        // 유틸: 코드 안전 표시
+        function escapeHtml(s) {
+            return s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+        }
+    </script>
+</body>
+
+</html>
